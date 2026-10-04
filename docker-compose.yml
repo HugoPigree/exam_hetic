@@ -1,0 +1,16 @@
+services:
+  app:
+    build: ./support
+    ports:
+      - "8080:8080"
+    volumes:
+      - app-logs:/app/logs
+
+  loadgen:
+    build: ./support
+    command: node scripts/loadgen.js --url http://app:8080
+    depends_on:
+      - app
+
+volumes:
+  app-logs:
