@@ -1,0 +1,34 @@
+loki.source.file "telemetry" {
+  targets    = [{"__path__" = "/logs/telemetry.log"}]
+  forward_to = [loki.process.telemetry.receiver]
+}
+
+loki.process "telemetry" {
+  stage.json {
+    expressions = { ts = "ts" }
+  }
+
+  stage.timestamp {
+    source = "ts"
+    format = "RFC3339"
+  }
+
+  stage.label_drop {
+    values = ["filename"]
+  }
+
+  stage.static_labels {
+    values = {
+      service = "game-telemetry",
+      source  = "live",
+    }
+  }
+
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
