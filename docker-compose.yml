@@ -43,6 +43,15 @@ services:
     depends_on:
       - loki
 
+  prometheus:
+    image: prom/prometheus:v3.15.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/rules.yml:/etc/prometheus/rules.yml:ro
+      - prometheus-data:/prometheus
+
   grafana:
     image: grafana/grafana:13.2.3
     ports:
@@ -54,12 +63,15 @@ services:
       GF_USERS_DEFAULT_THEME: dark
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/etc/grafana/dashboards:ro
       - grafana-data:/var/lib/grafana
     depends_on:
       - loki
+      - prometheus
 
 volumes:
   app-logs:
   loki-data:
   alloy-data:
   grafana-data:
+  prometheus-data:
