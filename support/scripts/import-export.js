@@ -1,6 +1,7 @@
 'use strict';
 
 const fs = require('node:fs');
+const { trouverCause } = require('../src/cause');
 
 const LOKI_URL = process.env.LOKI_URL ?? 'http://localhost:3100';
 const FICHIER = process.argv[2] ?? 'data/admin-export-2026-09-20_26.log';
@@ -62,6 +63,7 @@ function transformerBloc(bloc) {
     if (entree.report.rttMs === undefined) {
       entree.report.rttMs = entree.report.network.rttMs;
     }
+    entree.cause = trouverCause(entree.report);
   } else {
     entree.level = 'info';
     entree.event = 'game_completed';

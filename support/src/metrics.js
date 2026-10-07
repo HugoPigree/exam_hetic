@@ -1,6 +1,7 @@
 'use strict';
 
 const client = require('prom-client');
+const { trouverCause } = require('./cause');
 
 client.collectDefaultMetrics();
 
@@ -22,6 +23,14 @@ const rapportsPerf = new client.Counter({
   help: 'Rapports de performance reçus',
   labelNames: ['origin', 'cause', 'build'],
 });
+
+const rapportsInvalides = new client.Counter({
+  name: 'perf_reports_invalid_total',
+  help: 'Rapports impossibles (plus de 144 FPS ou durée négative)',
+  labelNames: ['origin'],
+});
+rapportsInvalides.inc({ origin: 'api' }, 0);
+rapportsInvalides.inc({ origin: 'simulation' }, 0);
 
 const dureeImage = new client.Histogram({
   name: 'perf_report_frame_seconds',
@@ -55,28 +64,6 @@ const ecartTick = new client.Histogram({
   buckets: [0.05, 0.06, 0.1, 0.2, 0.5, 1],
 });
 
-function trouverCause(report) {
-  const details = report.work?.details ?? {};
-  const activites = report.activities ?? [];
-
-  if (report.reason === 'network') {
-    return 'network';
-  }
-  if (activites.some((activite) => activite.name === 'visibilityHidden')) {
-    return 'hidden';
-  }
-  if (report.graphics?.firstCapture) {
-    return 'shader';
-  }
-  if (details.renderOverlay > 100) {
-    return 'overlay';
-  }
-  if (details.worldDynamics > 20) {
-    return 'world';
-  }
-  return 'generic';
-}
-
 function enregistrerRequete(method, route, status, dureeSecondes) {
   requetesHttp.inc({ method, route, status });
   dureeRequetesHttp.observe({ method, route }, dureeSecondes);
@@ -84,7 +71,11 @@ function enregistrerRequete(method, route, status, dureeSecondes) {
 
 function enregistrerRapport(origin, report) {
   const build = report.build ?? 'inconnu';
-  rapportsPerf.inc({ origin, cause: trouverCause(report), build });
+  const cause = trouverCause(report);
+  rapportsPerf.inc({ origin, cause, build });
+  if (cause === 'invalide') {
+    rapportsInvalides.inc({ origin });
+  }
   if (typeof report.frameMs === 'number') {
     dureeImage.observe({ origin, build }, report.frameMs / 1000);
   }
@@ -108,4 +99,4 @@ function enregistrerEvenementFlotte(evenement) {
   }
 }
 
-module.exports = { trouverCause, enregistrerRequete, enregistrerRapport, enregistrerEvenementFlotte };
+module.exports = { enregistrerRequete, enregistrerRapport, enregistrerEvenementFlotte };
