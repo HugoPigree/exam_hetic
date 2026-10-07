@@ -1,0 +1,461 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "interval": "1h",
+      "targets": [
+        {
+          "expr": "sum by (report_build) (count_over_time({source=\"export\"} | json | event=\"perf_spike\" | doublon=\"false\" [1h]))",
+          "legendFormat": "{{report_build}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Combien de rapports de saccade par heure, par build ?",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "interval": "1h",
+      "targets": [
+        {
+          "expr": "sum by (report_build) (count_over_time({source=\"export\"} | json | event=\"perf_spike\" | doublon=\"false\" | report_work_details_renderOverlay > 100 [1h]))",
+          "legendFormat": "{{report_build}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Depuis quand les saccades dues à l'overlay explosent-elles ?",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "orange",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 9
+      },
+      "id": 3,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [],
+          "values": true
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (ecran) (count_over_time({source=\"export\"} | json | event=\"perf_spike\" | doublon=\"false\" | report_work_details_renderOverlay > 100 | label_format ecran=\"{{.report_graphics_width}} px\" [$__range]))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Quelles largeurs d'écran sont touchées par l'overlay ?",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "orange",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 9
+      },
+      "id": 4,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [],
+          "values": true
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (bloom) (count_over_time({source=\"export\"} | json | event=\"perf_spike\" | doublon=\"false\" | report_work_details_renderOverlay > 100 | label_format bloom=\"bloom {{.report_graphics_bloom}}\" [$__range]))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Le bloom est-il activé chez les joueurs touchés par l'overlay ?",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 9
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "background",
+        "reduceOptions": {
+          "calcs": [],
+          "values": true
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "expr": "sum by (client) (count_over_time({source=\"export\"} | json | doublon=\"false\" | report_fps > 144 | label_format client=`{{ regexReplaceAll \"^P-|-[0-9]+$\" .report_id \"\" }}` [$__range]))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Quel client envoie des rapports impossibles (plus de 144 FPS) ?",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "description": "Une partie normale dure 5 à 14 minutes. Des parties très courtes en série sont un signe de farming.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 17
+      },
+      "id": 6,
+      "interval": "1h",
+      "targets": [
+        {
+          "expr": "sum by (server_map) (count_over_time({source=\"export\"} | json | event=\"game_completed\" | doublon=\"false\" | label_format duree=`{{ sub (unixEpochMillis __timestamp__) (int .server_createdAt) }}` | duree < 120000 [1h]))",
+          "legendFormat": "{{server_map}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Combien de parties de moins de 2 minutes se terminent par heure, par carte ?",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "orange",
+                "value": 100
+              },
+              {
+                "color": "red",
+                "value": 500
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 17
+      },
+      "id": 7,
+      "interval": "1h",
+      "targets": [
+        {
+          "expr": "max_over_time({source=\"export\"} | json | doublon=\"false\" | unwrap server_tickGapMaxMs [1h]) by (source)",
+          "legendFormat": "écart max",
+          "refId": "A"
+        }
+      ],
+      "title": "Le tick serveur a-t-il été dégradé (plus grand écart entre deux ticks) ?",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 26
+      },
+      "id": 8,
+      "interval": "1h",
+      "targets": [
+        {
+          "expr": "sum by (server_map) (count_over_time({source=\"export\"} | json | event=\"perf_spike\" | doublon=\"false\" | server_botStaleCount > 0 [1h]))",
+          "legendFormat": "{{server_map}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Sur quelle carte les bots répondent-ils en retard ?",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 26
+      },
+      "id": 9,
+      "options": {
+        "colorMode": "background",
+        "reduceOptions": {
+          "calcs": [],
+          "values": true
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (event) (count_over_time({source=\"export\"} | json | doublon=\"true\" [$__range]))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Combien de blocs en double contient l'export ?",
+      "type": "stat"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 42,
+  "tags": [
+    "ue03"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "2026-09-19T22:00:00.000Z",
+    "to": "2026-09-27T00:00:00.000Z"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "4 - Export historique (20 au 26 septembre)",
+  "weekStart": "",
+  "version": 7,
+  "uid": "export-historique",
+  "id": null
+}
