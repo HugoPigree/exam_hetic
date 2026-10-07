@@ -1,0 +1,14 @@
+groups:
+  - name: game-telemetry
+    rules:
+      - record: route_status:http_requests:rate1m
+        expr: sum by (route, status) (rate(http_requests_total[1m]))
+
+      - record: route:http_request_duration_seconds:p95_1m
+        expr: histogram_quantile(0.95, sum by (le, route) (rate(http_request_duration_seconds_bucket[1m])))
+
+      - record: origin_cause_build:perf_reports:rate5m
+        expr: sum by (origin, cause, build) (rate(perf_reports_total[5m]))
+
+      - record: map:games_short:ratio15m
+        expr: sum by (map) (rate(game_duration_seconds_bucket{le="15.0"}[15m])) / sum by (map) (rate(game_duration_seconds_count[15m]))
