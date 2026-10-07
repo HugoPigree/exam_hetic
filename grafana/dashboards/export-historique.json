@@ -437,6 +437,46 @@
       ],
       "title": "Combien de blocs en double contient l'export ?",
       "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "description": "Chaque rapport est classé automatiquement au moment de l'import (champ cause) : overlay, shader, hidden, network, world, invalide ou generic.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 35
+      },
+      "id": 10,
+      "interval": "1h",
+      "targets": [
+        {
+          "expr": "sum by (cause) (count_over_time({source=\"export\"} | json | event=\"perf_spike\" | doublon=\"false\" [1h]))",
+          "legendFormat": "{{cause}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Quelles causes expliquent les rapports de saccade, heure par heure ?",
+      "type": "timeseries"
     }
   ],
   "refresh": "",
