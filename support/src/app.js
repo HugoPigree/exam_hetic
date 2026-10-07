@@ -1,6 +1,8 @@
 'use strict';
 
 const express = require('express');
+const client = require('prom-client');
+const metrics = require('./metrics');
 
 // Application HTTP : ingestion des rapports clients + consultation des parties en cours.
 function createApp({ fleet, log }) {
@@ -12,6 +14,7 @@ function createApp({ fleet, log }) {
     res.on('finish', () => {
       const durationMs = Number(process.hrtime.bigint() - t0) / 1e6;
       log({ ts: new Date().toISOString(), level: 'info', event: 'http_request', method: req.method, path: req.route?.path ?? req.path, status: res.statusCode, durationMs: Math.round(durationMs * 100) / 100 });
+      metrics.enregistrerRequete(req.method, req.route?.path ?? 'inconnue', res.statusCode, durationMs / 1000);
     });
     next();
   });
@@ -19,6 +22,11 @@ function createApp({ fleet, log }) {
   app.get('/healthz', (req, res) => res.json({ status: 'ok' }));
 
   app.get('/api/games', (req, res) => res.json(fleet ? fleet.liveGames() : []));
+
+  app.get('/metrics', async (req, res) => {
+    res.set('Content-Type', client.register.contentType);
+    res.send(await client.register.metrics());
+  });
 
   app.post('/api/reports', (req, res) => {
     const body = req.body;
@@ -34,6 +42,7 @@ function createApp({ fleet, log }) {
     const busy = Date.now() + Math.min(40, size / 400);
     while (Date.now() < busy) { /* travail synchrone volontaire */ }
     log({ ts: new Date().toISOString(), level: 'warn', event: 'perf_spike', source: 'ingest', report, server: body.server });
+    metrics.enregistrerRapport('api', report);
     return res.status(202).json({ accepted: report.id });
   });
 

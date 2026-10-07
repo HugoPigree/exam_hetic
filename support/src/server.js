@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { createApp } = require('./app');
 const { Fleet } = require('./fleet');
+const metrics = require('./metrics');
 
 const PORT = Number(process.env.PORT ?? 8080);
 const LOG_FILE = process.env.LOG_FILE ?? path.join(__dirname, '..', 'logs', 'telemetry.log');
@@ -25,6 +26,7 @@ const fleet = new Fleet({
   incidents: process.env.INCIDENTS !== '0',
 });
 fleet.on('log', log);
+fleet.on('log', metrics.enregistrerEvenementFlotte);
 fleet.start();
 
 const app = createApp({ fleet, log });

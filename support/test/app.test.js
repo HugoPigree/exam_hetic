@@ -38,3 +38,12 @@ test('POST /api/reports accepte un rapport valide et le journalise', async () =>
     assert.ok(logs.some((l) => l.event === 'perf_spike'));
   });
 });
+
+test('GET /metrics expose les métriques Prometheus', async () => {
+  await withServer(async (base) => {
+    await fetch(`${base}/healthz`);
+    const r = await fetch(`${base}/metrics`);
+    assert.equal(r.status, 200);
+    assert.match(await r.text(), /http_requests_total\{method="GET",route="\/healthz",status="200"\}/);
+  });
+});
