@@ -1,0 +1,66 @@
+groups:
+  - name: game-telemetry-alertes
+    rules:
+      - alert: ServiceInjoignable
+        expr: up{job="game-telemetry"} == 0
+        for: 1m
+        labels:
+          severity: critique
+        annotations:
+          summary: "Le service de télémétrie ne répond plus"
+          description: "Prometheus n'arrive plus à lire /metrics depuis 1 minute."
+
+      - alert: ErreursServeurApi
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 0.01
+        for: 5m
+        labels:
+          severity: critique
+        annotations:
+          summary: "Plus de 1 % des requêtes finissent en erreur 5xx"
+          description: "Taux d'erreurs serveur : {{ $value | humanizePercentage }} sur les 5 dernières minutes."
+
+      - alert: IngestionLente
+        expr: route:http_request_duration_seconds:p95_1m{route="/api/reports"} > 0.2
+        for: 5m
+        labels:
+          severity: avertissement
+        annotations:
+          summary: "L'ingestion des rapports est lente"
+          description: "95 % des rapports sont ingérés en plus de 200 ms depuis 5 minutes (p95 = {{ $value | humanizeDuration }})."
+
+      - alert: RegressionOverlay
+        expr: |
+          sum by (build) (increase(perf_reports_total{origin="simulation", cause="overlay"}[1h])) / sum by (build) (increase(perf_reports_total{origin="simulation"}[1h])) > 0.05
+          and sum by (build) (increase(perf_reports_total{origin="simulation", cause="overlay"}[1h])) >= 5
+        for: 10m
+        labels:
+          severity: avertissement
+        annotations:
+          summary: "Le build {{ $labels.build }} provoque des saccades d'overlay"
+          description: "{{ $value | humanizePercentage }} des rapports de ce build viennent de l'overlay (normalement environ 1 %)."
+
+      - alert: RapportsFalsifies
+        expr: sum(increase(perf_reports_invalid_total[1h])) > 0
+        labels:
+          severity: avertissement
+        annotations:
+          summary: "Des rapports impossibles arrivent"
+          description: "Environ {{ $value | humanize }} rapports avec plus de 144 FPS ou une durée négative sur la dernière heure."
+
+      - alert: FarmingSuspect
+        expr: map:games_short:ratio15m > 0.3
+        for: 5m
+        labels:
+          severity: avertissement
+        annotations:
+          summary: "Trop de parties très courtes sur {{ $labels.map }}"
+          description: "{{ $value | humanizePercentage }} des parties de {{ $labels.map }} durent moins de 15 s (signe de farming)."
+
+      - alert: TickServeurDegrade
+        expr: histogram_quantile(0.95, sum by (le) (rate(server_tick_gap_seconds_bucket[10m]))) > 0.1
+        for: 5m
+        labels:
+          severity: avertissement
+        annotations:
+          summary: "Le tick serveur est dégradé"
+          description: "Le plus grand écart entre deux ticks dépasse 100 ms (p95 = {{ $value | humanizeDuration }})."
